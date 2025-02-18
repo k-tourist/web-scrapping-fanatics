@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Search</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mini.css/3.0.1/mini-default.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+    <script src="https://cdn.jsdelivr.net/gh/fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js"></script>
+    <style>
+        label {
+            display: block;
+        }
+        input {
+            width: 100%;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 250px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Search</h1>
+        <form action="/upload" class="upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="csv" class="csv" style="width: calc(100% - 90px);">
+            <button class="primary uploadbtn" style="margin: 0;">Upload</button>
+        </form>
+        <progress value="0" max="1000" style="display: none;"></progress>
+        <div class="cancel" style="display: none;">
+            <p><div class="spinner" style="display: none;"></div><button class="secondary stop">Cancel</button></p>
+        </div>
+        <div class="resbut" style="display: none;">
+            <p><a href="/results.csv" class="button primary " style="margin: 0;">Download Results</a></p>
+        </div>
+        <div class="failed"></div>
+        <form action="#" style="display: none;" class="form">
+            <div class="filters"></div>
+            <div style="text-align: right;">
+                <button class="primary" style="margin: 0;">Submit</button>
+            </div>
+        </form>
+        <table class="striped" style="max-height: 100%; display: none;">
+            <thead>
+                <tr>
+                    <th>Site</th>
+                    <th>Search</th>
+                    <th>Params</th>
+                    <th>Query</th>
+                    <th>Screenshot</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="results" style="display: none;">
+            <p>Fetching sites...</p>
+        </div>
+    </div>
+
+    <script>
+        // const defaultSites = [
+        //     {
+        //         url: "https://www.fanatics.com/",
+        //         query: "?query=",
+        //         search: [
+        //             "Michigan State Spartans Silicone AirPods Case - Green",
+        //             "Michigan State Spartans Silicone AirPods Case - Black",
+        //             "Michigan State Spartans Affinity Bands Debossed Silicone AirPods Case Cover - Green",
+        //             "Michigan State Spartans Affinity Bands AirPods Pro Silicone Case Cover",
+        //             "Michigan State Spartans Affinity Bands Debossed Silicone AirPods Pro Case Cover",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://www.target.com/",
+        //         query: "s?searchTerm=",
+        //         search: [
+        //             "NCAA Michigan State Spartans Silicone Cover for Apple AirPod Battery Case",
+        //             "NCAA Michigan State Spartans Apple AirPods Pro Compatible Silicone Battery Case Cover - Green",
+        //             "NCAA Michigan State Spartans Silicone Apple Watch Band 38mm - Green",
+        //             "NCAA Michigan State Spartans Silicone Apple Watch Band 42mm - Green",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://www.bedbathandbeyond.com/",
+        //         query: "store/s/",
+        //         search: [
+        //             "Michigan State University Silicone Cover for Apple AirPods Charging Case in Green",
+        //             "Michigan State University Apple AirPod® Pro Silicone Case Cove",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://www.shophq.com/",
+        //         query: "search/?q=",
+        //         search: [
+        //             "GameTime NCAA Silicone Case Cover for Apple AirPods",
+        //             "GameTime NCAA Silicone Strap for 38mm or 40mm Apple ® Watch",
+        //             "GameTime NCAA Silicone Strap for 42mm or 44mm Apple ® Watch",
+        //             "Officially Licensed NCAA Apple® AirPods Pro Silicone Case Cover & Carabiner",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://hsn.com/",
+        //         query: "search?query=",
+        //         search: [
+        //             // "Officially Licensed NCAA Silicone Battery Case for Apple AirPod",
+        //             // "Officially Licensed NCAA Apple AirPods Pro Case Cover - Michigan State",
+        //             // "Officially Licensed NCAA 38/40mm Silicone Apple Watch Band - MI State",
+        //             "Officially Licensed NCAA 42/44mm Silicone Apple Watch Band - Spartans",
+        //         ],
+        //         params: {
+        //             team: [
+        //                 'Miami',
+        //                 // 'Michigan',
+        //                 // 'Alabama',
+        //                 // 'Georgia',
+        //                 // 'Ohio State',
+        //                 // 'Florida',
+        //                 // 'Kentucky',
+        //                 // 'Florida State',
+        //                 // 'Texas A&amp;M',
+        //                 'Michigan State',
+        //                 // 'Clemson',
+        //                 // 'Tennessee',
+        //                 // 'Texas',
+        //                 // 'Virginia Tech',
+        //                 // 'Penn State',
+        //                 // 'Texas Tech',
+        //                 // 'Miami',
+        //                 // 'LSU',
+        //                 // 'Wisconsin',
+        //                 // 'West Virginia',
+        //                 // 'Nebraska',
+        //                 // 'Kansas',
+        //                 // 'South Carolina',
+        //                 // 'Auburn',
+        //                 // 'Kansas State',
+        //                 // 'Oklahoma',
+        //                 // 'North Carolina',
+        //                 'Oregon',
+        //                 // 'Iowa',
+        //             ],
+        //         },
+        //     },
+        //     {
+        //         url: "https://www.hibbett.com/",
+        //         query: "search?q=",
+        //         search: [
+        //             "C-125-AP1",
+        //             "C-125-AP2",
+        //             "C38-125-SW2",
+        //             "C38-125-SW3",
+        //             "C42-125-SW2",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://www.belk.com/",
+        //         query: "search/?q=",
+        //         search: [
+        //             "680487043518",
+        //             "680487043709",
+        //             "680487044300",
+        //             "680487045338",
+        //             "680487044317",
+        //             "680487045345",
+        //             "685149553862",
+        //             "840179918481",
+        //             "840179918610",
+        //         ],
+        //     },
+        //     {
+        //         url: "https://groupon.com/",
+        //         query: "deals/",
+        //         search: [
+        //             // "gg-mp-affinity-bands-ncaa-38-40mm-apple-watch-silicone-band",
+        //             "gg-mp-affinity-bands-ncaa-samsung-watch-silicone-band-20mm-and-22mm",
+        //         ],
+        //         params: {
+        //             team: [
+        //                 'Michigan State Spartans',
+        //                 'Michigan Wolverines',
+        //                 'Alabama Crimson Tide',
+        //                 'Miami Hurricanes',
+        //                 'Texas A&M Aggies',
+        //                 'LSU Tigers',
+        //                 'Tennessee Volunteers',
+        //                 'Wisconsin Badgers',
+        //                 'Georgia Bulldogs',
+        //                 'Florida State Seminoles',
+        //                 'Clemson Tigers',
+        //                 'Florida Gators',
+        //                 'West Virginia Mountaineers',
+        //                 'Kentucky Wildcats',
+        //                 'Ohio State Buckeyes',
+        //                 'Oklahoma Sooners',
+        //                 'North Carolina Tar Heels',
+        //                 'Texas Longhorns',
+        //                 'Penn State Nittany Lions',
+        //                 'Virginia Tech Hokies',
+        //             ],
+        //             size: [
+        //                 '20mm',
+        //                 '22mm',
+        //                 // '38mm/40mm',
+        //                 // '42mm/44mm',
+        //             ],
+        //         },
+        //     },
+        // ];
+
+        console.log('initialized?');
+
+        let lastResult;
+
+        let skip = 0;
+
+        const cancel = document.querySelector('.stop');
+        cancel.addEventListener('click', function(e) {
+            console.log('cancelled?');
+            e.preventDefault();
+            skip = 1;
+            cancel.disabled = true;
+            document.querySelector('.uploadbtn').removeAttribute("disabled");
+            document.querySelector('.spinner').style.display = "block";
+        });
+
+        let upload = document.querySelector('.upload');
+
+        upload.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            await fetch("/start", {
+                method: "POST",
+            })
+            .then((response) => response.text())
+            .then((result) => {
+                console.log(result);
+            });
+            
+            document.querySelector('h1').innerHTML = "Product Search";
+            document.querySelector('table').style.display = "block";
+            document.querySelector('.cancel').style.display = "block";
+            document.querySelector('tbody').innerHTML = "";
+            document.querySelector('.results').style.display = "block";
+            document.querySelector('.failed').innerHTML = "";
+            document.querySelector('.results').innerHTML = "<p>Fetching sites...</p>";
+            document.querySelector('progress').style.display = "block";
+            document.querySelector('progress').value = 0;
+            csvResults = [];
+            lastResult = '';
+            failed = [];
+            document.querySelector('.uploadbtn').disabled = true;
+            document.querySelector('.resbut').style.display = "none";
+            skip = 0;
+
+            const data = new FormData(this);
+
+            fetch('/upload', {
+                method: 'POST',
+                // headers: {
+                //     'Accept': 'application/json',
+                //     'Content-Type': 'application/x-www-form-urlencoded'
+                // },
+                body: data
+            }).then(response => response.text()).then(text => {
+                handleCsv(text).then(function() {
+                    console.log('handled?');
+                    const title = document.querySelector('h1');
+                    title.innerHTML = `All done`;
+                    document.querySelector('.cancel').style.display = "none";
+
+                    console.log(csvResults);
+                    // save results
+                    fetch('/savecsv', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(csvResults)
+                    }).then(response => response.text()).then(text => {
+                        console.log(text);
+                        document.querySelector('.resbut').style.display = "block";
+                        document.querySelector('.uploadbtn').removeAttribute("disabled");
+                        skip = 0;
+
+                        fetch("/stop", {
+                            method: "POST",
+                        })
+                        .then((response) => response.text())
+                        .then((result) => {
+                            console.log(result);
+                            cancel.removeAttribute("disabled");
+                            document.querySelector('.spinner').style.display = "none";
+                        });
+                    });
+
+
+                    // document.querySelector("#again").addEventListener('click', function(event) {
+                    //     event.preventDefault();
+
+                    //     document.querySelector('h1').innerHTML = "Product Search";
+                    //     document.querySelector('table').style.display = "none";
+                    //     document.querySelector('tbody').innerHTML = "";
+                    //     document.querySelector('.results').style.display = "none";
+                    //     document.querySelector('.results').innerHTML = "<p>Fetching sites...</p>";
+                    //     document.querySelector('.failed').innerHTML = "";
+                    //     document.querySelector('progress').style.display = "none";
+                    //     document.querySelector('progress').value = 0;
+                    //     filterForm.style.display = "block";
+                    //     failed = [];
+                    // });
+                });
+            });
+        });
+
+        // function afterCsv() {
+        //     const title = document.querySelector('h1');
+        //     title.innerHTML = `All done`;
+        //     document.querySelector('.cancel').style.display = "none";
+
+        //     console.log(csvResults);
+        //     // save results
+        //     fetch('/savecsv', {
+        //         method: 'POST',
+        //         headers: {
+        //             'Accept': 'application/json',
+        //             'Content-Type': 'application/json'
+        //         },
+        //         body: JSON.stringify(csvResults)
+        //     }).then(response => response.text()).then(text => {
+        //         console.log(text);
+        //         failedWrap.innerHTML = `<p><a href="/results.csv" class="button primary resbut" style="margin: 0;">Download Results</a></p>${failedWrap.innerHTML}`;
+        //         skip = 0;
+
+        //         fetch("/stop", {
+        //             method: "POST",
+        //         })
+        //         .then((response) => response.text())
+        //         .then((result) => {
+        //             console.log(result);
+        //         });
+        //     });
+        // }
+
+        let originalCsv = [];
+
+        async function handleCsv(text) {
+            const csv = JSON.parse(text);
+            originalCsv = csv;
+
+            // console.log(originalCsv);
+
+            // save results
+            fetch('/savecsv', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(originalCsv)
+            }).then(response => response.text()).then(text => {
+                console.log(text, 'results updated');
+            });
+
+            let trimmedCsv = [];
+            let replacedCsv = [];
+            const statusesToNotRewrite = ['', 'search not found', 'failed', 'success', 'size not found'];
+
+            csv.forEach(row => {
+                const status = (row[7]) ? row[7] : '';
+
+                if ((row.length > 2 && status === '')) {
+                    trimmedCsv.push(row);
+                }
+                
+                replacedCsv.push(row);
+
+                // if ((row.length > 2 && status !== '' && status !== 'search not found' && status !== 'failed' && status !== 'success')) {
+                // if (row.length > 2 && !statusesToNotRewrite.includes(status)) {
+                //     row[2] = row[7];
+                //     row[7] = 'success';
+                //     replacedCsv.push(row);
+                // } else {
+                //     replacedCsv.push(row);
+                // }
+            });
+
+            // save results
+            fetch('/savecsv2', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(replacedCsv)
+            }).then(response => response.text()).then(text => {
+                console.log(text, 'results updated');
+            return
+
+            });
+
+            for (let index = 0; index < trimmedCsv.length; index++) {
+                await restartIfFailed(trimmedCsv);
+
+                if (lastResult.length && lastResult[0][7] === 'failed' || skip) {
+                    console.log('skip???');
+                    break;
+                }
+
+                await handleCsvRow(trimmedCsv[index], trimmedCsv);
+            }
+        }
+
+        async function restartIfFailed(trimmedCsv) {
+            if (lastResult.length && lastResult[0][7] === 'failed') {
+                await fetch("/stop", {
+                    method: "POST",
+                })
+                .then((response) => response.text())
+                .then((result) => {
+                    console.log(result);
+                });
+
+                await fetch("/start", {
+                    method: "POST",
+                })
+                .then((response) => response.text())
+                .then((result) => {
+                    console.log(result);
+                    document.querySelector('.cancel').style.display = "block";
+                    const resultButton = document.querySelector('.resbut');
+
+                    if (resultButton && resultButton.length) {
+                        resultButton.style.display = "none";
+                    }
+                });
+
+                trimmedCsv = trimmedCsv.splice(0, lastResult[1]);
+                lastResult = [];
+                // await handleCsvRow(trimmedCsv[lastResult[1]], trimmedCsv);
+
+                for (let index = 0; index < trimmedCsv.length; index++) {
+                    await restartIfFailed(trimmedCsv);
+
+                    if (lastResult.length && lastResult[0][7] === 'failed' || skip) {
+                        break;
+                    }
+
+                    await handleCsvRow(trimmedCsv[index], trimmedCsv);
+                }
+            }
+        }
+
+        async function handleCsvRow(row, csv) {
+            if (row && row.length > 2) {
+                const site = row[0].trim();
+                const query = row[1].trim();
+                const search = row[2].trim();
+                const team = (row[3]) ? row[3].trim() : '';
+                const size = (row[4]) ? row[4].trim() : '';
+                const store = (row[5]) ? row[5].trim() : '';
+                const sku = (row[6]) ? row[6].trim() : '';
+                const params = (team && size) ? `${team},${size}` : team;
+                const searchQ = (site.includes('shophq.com') || site.includes('target.com')) ? encodeURIComponent(search.replaceAll(' ', '+')) : encodeURI(search);
+                const queryCombine = site + query + searchQ.replaceAll('&', '%26');
+                let raw = [site, query, search, team, size, store, sku, ''];
+
+                await fetchCsvQuery(site, csv, search, queryCombine, params, raw);
+            }
+        }
+
+        async function fetchCsvQuery(site, sites, search, query, params, raw) {
+            // countTillRestart++;
+
+            // const restart = (countTillRestart === 100) ? 1 : 0;
+
+            // if (restart) {
+            //     countTillRestart = 0;
+            // }
+            const restart = 0;
+
+            // console.log(params)
+            try {
+                const queryJson = {
+                    url: query,
+                    params: params,
+                    restart: restart
+                };
+                
+                const result = await fetch("/api", {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(queryJson)
+                })
+                .then((response) => response.json())
+                .then((result) => {
+                    handleResponse(result, site, search, params, query, site.result);
+                    handleProgress(sites, 'csv');
+                    raw[7] = result.status;
+                    handleResults(raw);
+                });
+            } catch(error) {
+                console.error(error);
+                message(
+                `Search for <strong>${search}</strong> on <strong>${site}</strong> <mark class="secondary">failed</mark>.`
+                );
+                table({ url: site, search: search, params: params, query: query, result: {status: 'failed', image: 'failed' } });
+                handleProgress(sites, 'csv');
+                raw[7] = 'failed';
+                handleResults(raw);
+            }
+        }
+
+        let csvResults = [];
+
+        function handleResults(raw) {
+            // csvResults.push(raw);
+            lastResult = [raw, csvResults.length];
+            
+            let newCsv = [];
+
+            originalCsv.forEach(row => {
+                if (row && row[2] === raw[2] && row[3] === raw[3]) {
+                    row[7] = raw[7];
+                }
+
+                newCsv.push(row);
+            });
+
+            csvResults = newCsv;
+
+            // save results
+            fetch('/savecsv', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(newCsv)
+            }).then(response => response.text()).then(text => {
+                console.log(text, 'results updated');
+            });
+        }
+
+        let failed = [];
+        const failedWrap = document.querySelector('.failed');
+
+        const handleFailed = () => {
+            if (failed.length) {
+                failedWrap.innerHTML = `<p><strong>${failed.length}</strong> <mark class="secondary">failed</mark></p>`;
+
+                failed.forEach((data, index) => {
+                    failedWrap.innerHTML = `${failedWrap.innerHTML}<p>${index + 1}. ${data.url} <a href="${data.query}" target="_blank">${data.query}</a> <em>${data.params}</em> <strong>${data.result.status}</strong> <a data-fancybox="gallery" data-caption="${data.search}" href="/screenshots/${data.result.image}">screenshot</a></p>`
+                });
+            }
+        }
+
+        let j = 1;
+
+        const handleProgress = (sites, type) => {
+            const progress = document.querySelector('progress');
+            let total = 0;
+
+            if (type === 'csv') {
+                total = sites.length;
+            } else {
+                sites.forEach(site => {
+                    site.search.forEach(search => {
+                        if (site.params && site.params.team.length) {
+                            site.params.team.forEach(team => {
+                                if (site.params && site.params.size.length) {
+                                    site.params.size.forEach(size => {
+                                        total++;
+                                    });
+                                } else {
+                                    total++;
+                                }
+                            });
+                        } else {
+                            total++;
+                        }
+                    });
+                });
+            }
+
+
+            progress.value = j / total * 1000;
+            
+            if (j === total) {
+                progress.value = 1000;
+                j = 1;
+            } else {
+                j++;
+            }
+        };
+
+        const filterForm = document.querySelector('.form');
+        filterForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let sites = [];
+            let savedSites = [];
+            const filters = event.target.querySelectorAll('.filters .row');
+
+            document.querySelector('h1').innerHTML = "Product Search";
+            document.querySelector('table').style.display = "block";
+            document.querySelector('.cancel').style.display = "block";
+            document.querySelector('tbody').innerHTML = "";
+            document.querySelector('.results').style.display = "block";
+            document.querySelector('.failed').innerHTML = "";
+            document.querySelector('.results').innerHTML = "<p>Fetching sites...</p>";
+            document.querySelector('progress').style.display = "block";
+            document.querySelector('progress').value = 0;
+
+            filters.forEach(row => {
+                const url = row.querySelector('.url').value;
+                const query = row.querySelector('.query').value;
+                const search = row.querySelector('.search').value;
+                const searchArray = (search) ? search.split(/\r?\n/) : [];
+                const searchArrayFiltered = searchArray.filter(function (el) {
+                    return el != "";
+                });
+                const team = row.querySelector('.team');
+                let teamArrayFiltered = [];
+
+                if (team && team.value) {
+                    const teamArray = (team.value) ? team.value.split(/\r?\n/) : [];
+                    teamArrayFiltered = teamArray.filter(function (el) {
+                        return el != "";
+                    });
+                }
+
+                const size = row.querySelector('.size');
+                let sizeArrayFiltered = [];
+
+                if (size && size.value) {
+                    const sizeArray = (size.value) ? size.value.split(/\r?\n/) : [];
+                    sizeArrayFiltered = sizeArray.filter(function (el) {
+                        return el != "";
+                    });
+                }
+
+                const exclude = row.querySelector('.exclude');
+                
+                if (exclude && !exclude.checked) {
+                    sites.push({
+                        url: url,
+                        query: query,
+                        search: searchArrayFiltered,
+                        params: {
+                            team: teamArrayFiltered,
+                            size: sizeArrayFiltered,
+                        }
+                    });
+                }
+
+                savedSites.push({
+                    url: url,
+                    query: query,
+                    search: searchArrayFiltered,
+                    params: {
+                        team: teamArrayFiltered,
+                        size: sizeArrayFiltered,
+                    },
+                    exclude: exclude.checked
+                });
+            });
+
+            // save sites
+            fetch('/save', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(savedSites)
+            }).then(response => response.text()).then(text => console.log(text));
+
+            fetchSites(sites).then(function() {
+                const title = document.querySelector('h1');
+                title.innerHTML = `All done`;
+                document.querySelector('.cancel').style.display = "none";
+
+                failedWrap.innerHTML = `${failedWrap.innerHTML}<p><button class="primary" style="margin: 0;" id="again">New Search?</button></p>`;
+
+                document.querySelector("#again").addEventListener('click', function(event) {
+                    event.preventDefault();
+
+                    document.querySelector('h1').innerHTML = "Product Search";
+                    document.querySelector('table').style.display = "none";
+                    document.querySelector('tbody').innerHTML = "";
+                    document.querySelector('.results').style.display = "none";
+                    document.querySelector('.results').innerHTML = "<p>Fetching sites...</p>";
+                    document.querySelector('.failed').innerHTML = "";
+                    document.querySelector('progress').style.display = "none";
+                    document.querySelector('progress').value = 0;
+                    filterForm.style.display = "block";
+                    failed = [];
+                });
+            });
+
+            filterForm.style.display = "none";
+        });
+
+        const populateForm = () => {
+            const filters = filterForm.querySelector('.filters');
+            
+            fetch('/sites').then(response => response.json()).then(defaultSites => {
+                defaultSites.forEach(site => {
+                    let search = '';
+                    let teamHTML = '';
+                    let sizeHTML = '';
+
+                    site.search.forEach(s => {
+                        search += `${s}\n`;
+                    });
+
+                    if (site.params && site.params.team) {
+                        let team = '';
+
+                        site.params.team.forEach(s => {
+                            team += `${s}\n`;
+                        });
+
+                        if (team) {
+                            teamHTML = `
+                            <div class="col-sm">
+                                <label>Team</label>
+                                <textarea class="team">${team}</textarea>
+                            </div>
+                            `;
+                        }
+                    }
+
+                    if (site.params && site.params.size) {
+                        let size = '';
+
+                        site.params.size.forEach(s => {
+                            size += `${s}\n`;
+                        });
+
+                        if (size) {
+                            sizeHTML = `
+                            <div class="col-sm">
+                                <label>Size</label>
+                                <textarea class="size">${size}</textarea>
+                            </div>
+                            `;
+                        }
+                    }
+
+                    const exclude = (site.exclude) ? 'checked' : '';
+
+                    filters.innerHTML = `${filters.innerHTML}<div class="row">
+                        <div class="col-sm">
+                            <label>URL</label>
+                            <input type="text" class="url" value="${site.url}">
+                            <label><input type="checkbox" class="exclude" ${exclude}> Exclude from search</label>
+                        </div>
+                        <div class="col-sm">
+                            <label>Query</label>
+                            <input type="text" class="query" value="${site.query}">
+                        </div>
+                        <div class="col-sm">
+                            <label>Search</label>
+                            <textarea class="search">${search}</textarea>
+                        </div>
+                        ${teamHTML}
+                        ${sizeHTML}
+                    </div>`;
+                });
+            });
+        };
+        // populateForm();
+
+        const table = (data) => {
+            const tableBody = document.querySelector("tbody");
+
+            const image = (data.result.image !== 'failed') ? `<a data-fancybox="gallery" data-caption="${data.search} ${data.params}" href="/screenshots/${data.result.image}"><img src="/screenshots/${data.result.image}" /></a>` : 'failed';
+
+            const status = data.result.status;
+            const statusHTML = (status && status === 'success') ? `<mark class="tertiary">${status}</mark>` : `<mark class="secondary">${status}</mark>`;
+
+            if (status !== 'success') {
+                failed.push(data);
+                handleFailed();
+            }
+
+            tableBody.innerHTML = `<tr><td>${data.url}</td><td>${data.search}</td><td>${data.params}</td><td><a href="${data.query}" target="_blank">${data.query}</a></td><td>${image}</td><td>${statusHTML}</td></tr>${tableBody.innerHTML}`;
+        };
+
+        const message = (text) => {
+            const results = document.querySelector(".results");
+            results.innerHTML = `<p>${text}</p>${results.innerHTML}`;
+        };
+
+        const handleResponse = (response, site, search, params, query, result) => {
+            const paramString = (params) ? `with params <strong>${params}</strong> ` : '';
+
+            if (response && response.status) {
+                const statusHTML = (response.status === 'success') ? `<mark class="tertiary">${response.status}</mark>` : `<mark class="secondary">${response.status}</mark>`; 
+                message(
+                    `Search for <strong>${search}</strong> on <strong>${site}</strong> ${paramString}${statusHTML}`
+                );
+                table({ url: site, search: search, params: params, query: query, result: response });
+            } else {
+                message(
+                    `Search for <strong>${search}</strong> on <strong>${site}</strong> ${paramString}<mark class="secondary">failed</mark>`
+                );
+                table({ url: site, search: search, params: params, query: query, result: {status: 'failed', image: 'failed'} });
+            }
+        };
+
+        async function fetchSites(sites) {
+            for (let index = 0; index < sites.length; index++) {
+                const site = sites[index];
+                
+                message(`Fetching <strong>${site.url}</strong>...`);
+
+                await fetchSearch(site, sites);
+            }
+        }
+
+        async function fetchSearch(site, sites) {
+            for (let i = 0; i < site.search.length; i++) {
+                const search = site.search[i];
+                const searchQ = (site.url.includes('shophq.com') || site.url.includes('target.com')) ? encodeURIComponent(search.replaceAll(' ', '+')) : encodeURI(search);
+                
+                message(
+                    `Searching <strong>${site.url}</strong> for <strong>${search}</strong>...`
+                );
+
+                const query = site.url + site.query + searchQ;
+
+                let params = '';
+
+                if (site.params && site.params.team.length) {
+                    for (let t = 0; t < site.params.team.length; t++) {
+                        const team = site.params.team[t];
+                        params = `${team}`;
+
+                        message(
+                            `Searching <strong>${site.url}</strong> for <strong>${search}</strong> with team <strong>${team}</strong>...`
+                        );
+
+                        if (site.params && site.params.size.length) {
+                            for (let s = 0; s < site.params.size.length; s++) {
+                                const size = site.params.size[s];
+                                params = `${team},${size}`;
+
+                                message(
+                                    `Searching <strong>${site.url}</strong> for <strong>${search}</strong> with team <strong>${team}</strong> and size <strong>${size}</strong>...`
+                                );
+                                
+                                await fetchQuery(site, sites, search, query, params);
+                            }
+                        } else {
+                            await fetchQuery(site, sites, search, query, params);
+                        }
+                    }
+                } else {
+                    await fetchQuery(site, sites, search, query, params);
+                }
+            }
+        }
+
+        let countTillRestart = 0;
+
+        async function fetchQuery(site, sites, search, query, params) {
+            // countTillRestart++;
+
+            // const restart = (countTillRestart === 100) ? 1 : 0;
+
+            // if (restart) {
+            //     countTillRestart = 0;
+            // }
+
+            const restart = 0;
+
+            // console.log(params)
+            try {
+                const queryJson = {
+                    url: query,
+                    params: params,
+                    restart: restart
+                };
+                
+                const result = await fetch("/api", {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(queryJson)
+                })
+                .then((response) => response.text())
+                .then((result) => {
+                    handleResponse(result, site.url, search, params, query, site.result);
+                    handleProgress(sites);
+                });
+            } catch(error) {
+                console.error(error);
+                message(
+                `Search for <strong>${search}</strong> on <strong>${site.url}</strong> <mark class="secondary">failed</mark>.`
+                );
+                table({ url: site.url, search: search, params: params, query: query, result: {status: 'failed', image: 'failed' } });
+                handleProgress(sites);
+            }
+        }
+    </script>
+</body>
+</html>

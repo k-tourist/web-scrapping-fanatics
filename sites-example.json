@@ -1,0 +1,169 @@
+[
+    {
+        "url": "https://www.fanatics.com/",
+        "query": "?query=",
+        "search": [
+            "Michigan State Spartans Silicone AirPods Case - Green",
+            "Michigan State Spartans Silicone AirPods Case - Black",
+            "Michigan State Spartans Affinity Bands Debossed Silicone AirPods Case Cover - Green",
+            "Michigan State Spartans Affinity Bands AirPods Pro Silicone Case Cover",
+            "Michigan State Spartans Affinity Bands Debossed Silicone AirPods Pro Case Cover"
+        ]
+    },
+    {
+        "url": "https://www.target.com/",
+        "query": "s?searchTerm=",
+        "search": [
+            "NCAA Michigan State Spartans Silicone Cover for Apple AirPod Battery Case",
+            "NCAA Michigan State Spartans Apple AirPods Pro Compatible Silicone Battery Case Cover - Green",
+            "NCAA Michigan State Spartans Silicone Apple Watch Band 38mm - Green",
+            "NCAA Michigan State Spartans Silicone Apple Watch Band 42mm - Green"
+        ]
+    },
+    {
+        "url": "https://www.bedbathandbeyond.com/",
+        "query": "store/s/",
+        "search": [
+            "Michigan State University Silicone Cover for Apple AirPods Charging Case in Green",
+            "Michigan State University Apple AirPod® Pro Silicone Case Cove"
+        ]
+    },
+    {
+        "url": "https://www.shophq.com/",
+        "query": "search/?q=",
+        "search": [
+            "GameTime NCAA Silicone Case Cover for Apple AirPods",
+            "GameTime NCAA Silicone Strap for 38mm or 40mm Apple ® Watch",
+            "GameTime NCAA Silicone Strap for 42mm or 44mm Apple ® Watch",
+            "Officially Licensed NCAA Apple® AirPods Pro Silicone Case Cover & Carabiner"
+        ],
+        "params": {
+            "team": [
+                "RUTGERS SCARLET KNIGHTS",
+                "MISSISSIPPI OLE MISS",
+                "CENTRAL MICHIGAN CHIPPEWAS",
+                "NEBRASKA HUSKERS",
+                "CREIGHTON BLUE JAYS",
+                "LIBERTY FLAMES",
+                "GEORGETOWN HOYAS",
+                "NORTH CAROLINA TAR HEELS",
+                "ARKANSAS RAZORBACKS",
+                "IOWA STATE CYCLONES",
+                "ARIZONA WILDCATS",
+                "OKLAHOMA SOONERS",
+                "LSU TIGERS",
+                "OREGON STATE BEAVERS",
+                "AUBURN TIGERS",
+                "CLEMSON TIGERS",
+                "PITTSBURGH PANTHERS",
+                "OREGON DUCKS",
+                "MINNESOTA GOLDEN GOPHERS",
+                "LOUISVILLE CARDINALS",
+                "PURDUE BOILERMAKERS",
+                "KENTUCKY WILDCATS",
+                "GEORGIA TECH YELLOW JACKETS",
+                "MIAMI HURRICANES",
+                "CENTRAL FLORIDA KNIGHTS",
+                "FLORIDA STATE SEMINOLES",
+                "MICHIGAN WOLVERINES",
+                "OHIO STATE BUCKEYES",
+                "SOUTH CAROLINA GAMECOCKS",
+                "IOWA HAWKEYES",
+                "MIDDLE TENNESSEE STATE",
+                "MICHIGAN STATE SPARTANS",
+                "MISSISSIPPI STATE BULLDOGS",
+                "PENN STATE NITTANY LIONS",
+                "BAYLOR BEARS",
+                "KANSAS STATE WILDCATS",
+                "MISSOURI TIGERS",
+                "FLORIDA GATORS",
+                "EAST CAROLINA PIRATES",
+                "KANSAS JAYHAWKS",
+                "GEORGIA BULLDOGS",
+                "ALABAMA CRIMSON TIDE",
+                "OKLAHOMA STATE COWBOYS",
+                "CA BERKELEY GOLDEN BEARS",
+                "FLORIDA INTL. PANTHERS",
+                "NORTH CAROLINA STATE WOLFPACK",
+                "HOUSTON COUGARS",
+                "CINCINNATI BEARCATS",
+                "NORTH DAKOTA STATE BISON"
+            ]
+        }
+    },
+    {
+        "url": "https://hsn.com/",
+        "query": "search?query=",
+        "search": [
+            "Officially Licensed NCAA 42/44mm Silicone Apple Watch Band - Spartans"
+        ],
+        "params": {
+            "team": [
+                "Miami",
+                "Michigan State",
+                "Oregon"
+            ]
+        }
+    },
+    {
+        "url": "https://www.hibbett.com/",
+        "query": "search?q=",
+        "search": [
+            "C-125-AP1",
+            "C-125-AP2",
+            "C38-125-SW2",
+            "C38-125-SW3",
+            "C42-125-SW2"
+        ]
+    },
+    {
+        "url": "https://www.belk.com/",
+        "query": "search/?q=",
+        "search": [
+            "680487043518",
+            "680487043709",
+            "680487044300",
+            "680487045338",
+            "680487044317",
+            "680487045345",
+            "685149553862",
+            "840179918481",
+            "840179918610"
+        ]
+    },
+    {
+        "url": "https://groupon.com/",
+        "query": "deals/",
+        "search": [
+            "gg-mp-affinity-bands-ncaa-samsung-watch-silicone-band-20mm-and-22mm"
+        ],
+        "params": {
+            "team": [
+                "Michigan State Spartans",
+                "Michigan Wolverines",
+                "Alabama Crimson Tide",
+                "Miami Hurricanes",
+                "Texas A&M Aggies",
+                "LSU Tigers",
+                "Tennessee Volunteers",
+                "Wisconsin Badgers",
+                "Georgia Bulldogs",
+                "Florida State Seminoles",
+                "Clemson Tigers",
+                "Florida Gators",
+                "West Virginia Mountaineers",
+                "Kentucky Wildcats",
+                "Ohio State Buckeyes",
+                "Oklahoma Sooners",
+                "North Carolina Tar Heels",
+                "Texas Longhorns",
+                "Penn State Nittany Lions",
+                "Virginia Tech Hokies"
+            ],
+            "size": [
+                "20mm",
+                "22mm"
+            ]
+        }
+    }
+]

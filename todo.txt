@@ -1,0 +1,4 @@
+# 1. save options to json
+2. add params for shophq
+3. csv?
+# 4. reopen browser
