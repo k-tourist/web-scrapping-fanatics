@@ -10,7 +10,6 @@ const fileUpload = require("express-fileupload");
 var bodyParser = require("body-parser");
 var stringSimilarity = require("string-similarity");
 const randomUserAgent = require('random-useragent');
-
 const targetHelpers = require("./scrappers/target_com/helpers.js");
 
 app.use(bodyParser.json({ limit: "50mb" }));
@@ -163,7 +162,28 @@ const findVariant = async (page, size, sizes) => {
   return sizesSimilar;
 }
 
+
+
 let isProcessing = false;
+
+async function randomMouseMove(page) {
+  // Get the viewport size
+  const viewport = await page.viewport();
+  const width = viewport.width;
+  const height = viewport.height;
+
+  // Generate random coordinates within the viewport
+  const randomX = Math.floor(Math.random() * width);
+  const randomY = Math.floor(Math.random() * height);
+
+  // Move the mouse to the random position
+  await page.mouse.move(randomX, randomY);
+}
+
+let id = 0;
+let browser = null;
+let page = null;
+let links = [];
 
 (async function () {
   app.post("/start", async function (req, res) {
@@ -185,14 +205,26 @@ let isProcessing = false;
   });
 
   app.post("/api", async function (req, res) {
-    console.log('api invoked');
-    let browser = await puppeteer.launch({
-      headless: false,
+    const lastTimeBeforeLauchBrowser = Date.now();
+    browser = await puppeteer.launch({
+      headless: "new",
       executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
-    let page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(30000);
+    page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(100000);
+    console.log('browser launchTime', (Date.now() - lastTimeBeforeLauchBrowser) / 1000);
+    id = (id || 0) + 1;
+    console.log('api invoked', id);
+    if (id % 40 === 0) {
+      await new Promise(resolve => setTimeout(resolve, randomNumber(10000, 20000)));
+      console.log('take a break');
+    }
+    if (id % 120 === 0) {
+      await new Promise(resolve => setTimeout(resolve, randomNumber(20000, 30000)));
+      console.log('take a break');
+    }
     console.log('brower & page prepared');
     if (isProcessing) {
       console.log('still processing');
@@ -208,7 +240,7 @@ let isProcessing = false;
         message: "Browser not initialized. Please call /start first"
       });
     }
-
+    // http://georgia2.ddns.net:50010 -U udb1bsxo:p1886170
     isProcessing = true;
     const { url, params } = req.body;
     const uid = url.replace(/[^a-zA-Z0-9]/g, "");
@@ -220,56 +252,49 @@ let isProcessing = false;
     };
 
     try {
-      // Reset navigation timeout for this request
-      await page.setDefaultNavigationTimeout(30000);
-
-      if (url.includes('target.com') && url.includes('%2B-%2B')) {
-        url = url.replace('%2B-%2B', ' ');
-      }
-
-      if (url.includes('target.com')) {
-        const userAgent = randomUserAgent.getRandom(targetHelpers.filterUserAgents);
-        await page.setUserAgent(userAgent);
-        await page.setExtraHTTPHeaders({
-          'Accept-Language': 'en-US,en;q=0.9',
-          'DNT': '1',
-        });
-      }
-
-      await page.goto(url, {
-        waitUntil: "load",
-        timeout: 30000
+      await page.setExtraHTTPHeaders({
+        "Accept-Language": "en-US,en;q=0.9",
+        "Referer": "https://www.fanatics.com/",
+        "DNT": "1", // Do Not Track
+        "Upgrade-Insecure-Requests": "1",
       });
+
+
+
+      const lastTimeBeforeNavigation = Date.now();
+      page.goto(url, { waitUntil: "domcontentloaded" });
+      console.log('navigation time', (Date.now() - lastTimeBeforeNavigation) / 1000);
+      // await page.goto(url, { waitUntil: 'domcontentloaded' });
 
       console.log('goto ', url);
 
       await page.setViewport({ width: 1366, height: 1366 });
 
       if (url.includes("fanatics.com")) {
+        const lastTimeBeforeHandleFanaticsLogic = Date.now();
         await handleFanaticsLogic(page, url, params, response);
+        console.log('handleFanatics.com ', (Date.now() - lastTimeBeforeHandleFanaticsLogic) / 1000);
       }
 
       console.log('all good, so far');
+      const lastTimeBeforeCapture = Date.now();
       await page.screenshot({ path: imagePath });
-      console.log('screen captured');
+      console.log('screen captured', (Date.now() - lastTimeBeforeCapture) / 1000);
 
       if (response.status === "processing") {
         response.status = "success";
       }
       await page.close();
       page = null;
+      const last = Date.now();
       await browser.close();
       browser = null;
-
+      console.log('broswer close time', (Date.now() - last) / 1000);
+      console.log('total time ', (Date.now() - lastTimeBeforeLauchBrowser) / 1000);
       res.send(response);
       console.log('ok, ');
     } catch (error) {
       console.error('API error:', error);
-      await page.close();
-      page = null;
-      await browser.close();
-      browser = null;
-
       res.send({
         status: "failed",
         image: "failed",
@@ -287,52 +312,62 @@ let isProcessing = false;
     try {
       console.log('handleFanaticsLogic');
 
-      await page.waitForSelector('#typeahead-input-desktop', { timeout: 15000 });
-      console.log('found search bar!');
-      await page.waitForSelector('.global-footer-main', { timeout: 15000 });
-      console.log('found footer!');
-
-      console.log('full loaded');
-      params = params.split(",");
-      let size = decodeURI(params[0]);
-
-      await page.waitForTimeout(3000); //wait for modal
-
-      const isModal = await page.$('.modal-close-button');
-      if (isModal) {
-        await page.click(".modal-close-button", { timeout: 1500 });
-      }
-
-      // await Promise.all([
-      //   page.click('.product-card-title a'),
-      //   page.waitForNavigation({ waitUntil: "networkidle0" })
-      // ]);
-      // console.log('product card-title clicked');
-
-      const productCard = await page.$('.product-card-title a');
-      if (productCard) {
-        const box = await productCard.boundingBox();
-        if (box) {
-          await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-          console.log('Product card-title clicked with mouse');
-        } else {
-          console.log('Bounding box not found for product-card-title');
-          throw new Error('Box not found');
-        }
-      } else {
-        console.log('Product card-title not found');
-        response.status = 'search not found';
+      const lastTimeBeforeSelectCard = Date.now();
+      await page.waitForSelector('.no-results-container, .product-card', { timeout: 120000 });
+      console.log('card selection time', (Date.now() - lastTimeBeforeSelectCard) / 1000);
+      if (await page.$('.no-results-container')) {
+        response.status = "search not found";
         throw new Error('search not found');
       }
+      const restTime = Date.now();
+      await page.waitForTimeout(100, 300);
 
-      await page.waitForNavigation({ waitUntil: "networkidle0" });
+      console.log('ok, loaded');
 
-      await page.waitForTimeout(randomNumber(2000, 5000));
-
+      params = params.split(",");
+      let size = decodeURI(params[0]);
+      console.log('rest time', (Date.now() - restTime) / 1000);
+      const lastTimeBeforeDOM = Date.now();
+      const productCard = await page.$('.product-card');
+      console.log('dom selection time', (Date.now() - lastTimeBeforeDOM) / 1000);
+      const lastTimeBeforeGetLink = Date.now();
+      if (productCard) {
+        const link = await productCard.$eval('a', (anchor) => anchor.href); // Extract the href attribute
+        await page.setDefaultNavigationTimeout(1000000);
+        await page.setExtraHTTPHeaders({
+          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+          "accept-language": "en-US,en;q=0.9",
+          "cache-control": "max-age=0",
+          "priority": "u=0, i",
+          "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\"133\", \"Chromium\";v=\"133\"",
+          "sec-ch-ua-mobile": "?0",
+          "sec-ch-ua-platform": "\"Windows\"",
+          "sec-fetch-dest": "document",
+          "sec-fetch-mode": "navigate",
+          "sec-fetch-site": "same-origin",
+          "sec-fetch-user": "?1",
+          "upgrade-insecure-requests": "1",
+          "cookie": "vid=e9436650-eaea-11ef-9ae7-3ba11895fbf0; vex=%7B%22tmid%22%3A%22e9436651-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22gsid%22%3A%22e9436652-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22iocid%22%3A%22e9436653-eaea-11ef-9ae7-3ba11895fbf0%22%7D;",
+          "Referer": url,
+          "Referrer-Policy": "strict-origin-when-cross-origin"
+        });
+        // console.log('res===>', result.data);
+        await page.goto(link, { waitUntil: 'domcontentloaded' });
+      }
+      else {
+        console.log('oops, something went wrong!!!');
+        throw new Error("oops");
+      }
+      console.log('nativation to item', (Date.now() - lastTimeBeforeGetLink) / 1000);
       if (size && typeof size !== 'undefined' && size !== 'undefined' && size !== '') {
         size = size.toLowerCase();
+        if (size.startsWith('apple')) {
+          size = size.replace('apple', '');
+        }
+        const lastTimeBeforeSize = Date.now();
         const sizes = await page.$$("label.available");
         const unavailableSizes = await page.$$("label.unavailable");
+        console.log('Size detection time', (Date.now() - lastTimeBeforeSize) / 1000);
 
         const sizesSimilar = await findVariant(page, size, sizes);
         const unavailableSizesSimilar = await findVariant(page, size, unavailableSizes);
@@ -344,12 +379,20 @@ let isProcessing = false;
           console.log('has fully sizesimilar=>', sizesSimilar);
           response.status = "size not found";
         }
+        console.log('total size detection time', (Date.now() - lastTimeBeforeSize) / 1000);
       } else {
         console.log('there is no specified size');
       }
     } catch (error) {
+      if (error.message === 'search not found') {
+        response.status = "search not found";
+      } else if (error.message === "oops") {
+        response.status = "something went wrong";
+      }
+      else {
+        response.status = "failed";
+      }
       console.error('Fanatics handling error:', error);
-      response.status = "search not found";
     }
   }
 })();
