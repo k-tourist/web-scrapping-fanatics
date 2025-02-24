@@ -12,6 +12,13 @@ var stringSimilarity = require("string-similarity");
 const randomUserAgent = require('random-useragent');
 const targetHelpers = require("./scrappers/target_com/helpers.js");
 
+const proxies = [
+  ':ujca9kfd:p2320391',
+  'http://pjydjspo:cbdrm7s5x57g:207.244.217.165:6712',
+  'http://pjydjspo:cbdrm7s5x57g:107.172.163.27:6543',
+  'http://pjydjspo:cbdrm7s5x57g:64.137.42.112:5157',
+];
+
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
@@ -205,26 +212,30 @@ let links = [];
   });
 
   app.post("/api", async function (req, res) {
+    id = (id || 0) + 1;
     const lastTimeBeforeLauchBrowser = Date.now();
     browser = await puppeteer.launch({
       headless: "new",
       executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox", `--proxy-server=${'http://georgia2.ddns.net:50004'}`],
     });
     page = await browser.newPage();
+    await page.authenticate({
+      username: 'ujca9kfd',
+      password: 'p2320391',
+    });
     await page.setDefaultNavigationTimeout(100000);
     console.log('browser launchTime', (Date.now() - lastTimeBeforeLauchBrowser) / 1000);
-    id = (id || 0) + 1;
     console.log('api invoked', id);
-    if (id % 40 === 0) {
-      await new Promise(resolve => setTimeout(resolve, randomNumber(10000, 20000)));
-      console.log('take a break');
-    }
-    if (id % 120 === 0) {
-      await new Promise(resolve => setTimeout(resolve, randomNumber(20000, 30000)));
-      console.log('take a break');
-    }
+    // if (id % 40 === 0) {
+    //   await new Promise(resolve => setTimeout(resolve, randomNumber(10000, 20000)));
+    //   console.log('take a break');
+    // }
+    // if (id % 120 === 0) {
+    //   await new Promise(resolve => setTimeout(resolve, randomNumber(20000, 30000)));
+    //   console.log('take a break');
+    // }
     console.log('brower & page prepared');
     if (isProcessing) {
       console.log('still processing');
@@ -334,23 +345,6 @@ let links = [];
       if (productCard) {
         const link = await productCard.$eval('a', (anchor) => anchor.href); // Extract the href attribute
         await page.setDefaultNavigationTimeout(1000000);
-        await page.setExtraHTTPHeaders({
-          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "accept-language": "en-US,en;q=0.9",
-          "cache-control": "max-age=0",
-          "priority": "u=0, i",
-          "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\"133\", \"Chromium\";v=\"133\"",
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": "\"Windows\"",
-          "sec-fetch-dest": "document",
-          "sec-fetch-mode": "navigate",
-          "sec-fetch-site": "same-origin",
-          "sec-fetch-user": "?1",
-          "upgrade-insecure-requests": "1",
-          "cookie": "vid=e9436650-eaea-11ef-9ae7-3ba11895fbf0; vex=%7B%22tmid%22%3A%22e9436651-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22gsid%22%3A%22e9436652-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22iocid%22%3A%22e9436653-eaea-11ef-9ae7-3ba11895fbf0%22%7D;",
-          "Referer": url,
-          "Referrer-Policy": "strict-origin-when-cross-origin"
-        });
         // console.log('res===>', result.data);
         await page.goto(link, { waitUntil: 'domcontentloaded' });
       }
@@ -365,6 +359,7 @@ let links = [];
           size = size.replace('apple', '');
         }
         const lastTimeBeforeSize = Date.now();
+        await page.waitForTimeout(100);
         const sizes = await page.$$("label.available");
         const unavailableSizes = await page.$$("label.unavailable");
         console.log('Size detection time', (Date.now() - lastTimeBeforeSize) / 1000);
