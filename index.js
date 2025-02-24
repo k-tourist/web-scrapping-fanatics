@@ -334,23 +334,6 @@ let links = [];
       if (productCard) {
         const link = await productCard.$eval('a', (anchor) => anchor.href); // Extract the href attribute
         await page.setDefaultNavigationTimeout(1000000);
-        await page.setExtraHTTPHeaders({
-          "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-          "accept-language": "en-US,en;q=0.9",
-          "cache-control": "max-age=0",
-          "priority": "u=0, i",
-          "sec-ch-ua": "\"Not(A:Brand\";v=\"99\", \"Microsoft Edge\";v=\"133\", \"Chromium\";v=\"133\"",
-          "sec-ch-ua-mobile": "?0",
-          "sec-ch-ua-platform": "\"Windows\"",
-          "sec-fetch-dest": "document",
-          "sec-fetch-mode": "navigate",
-          "sec-fetch-site": "same-origin",
-          "sec-fetch-user": "?1",
-          "upgrade-insecure-requests": "1",
-          "cookie": "vid=e9436650-eaea-11ef-9ae7-3ba11895fbf0; vex=%7B%22tmid%22%3A%22e9436651-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22gsid%22%3A%22e9436652-eaea-11ef-9ae7-3ba11895fbf0%22%2C%22iocid%22%3A%22e9436653-eaea-11ef-9ae7-3ba11895fbf0%22%7D;",
-          "Referer": url,
-          "Referrer-Policy": "strict-origin-when-cross-origin"
-        });
         // console.log('res===>', result.data);
         await page.goto(link, { waitUntil: 'domcontentloaded' });
       }
