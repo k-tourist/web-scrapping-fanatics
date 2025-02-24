@@ -216,7 +216,7 @@ let links = [];
     const lastTimeBeforeLauchBrowser = Date.now();
     browser = await puppeteer.launch({
       headless: "new",
-      // executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       args: ["--no-sandbox", "--disable-setuid-sandbox", `--proxy-server=${'http://georgia2.ddns.net:50004'}`],
     });
