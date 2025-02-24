@@ -12,6 +12,13 @@ var stringSimilarity = require("string-similarity");
 const randomUserAgent = require('random-useragent');
 const targetHelpers = require("./scrappers/target_com/helpers.js");
 
+const proxies = [
+  ':ujca9kfd:p2320391',
+  'http://pjydjspo:cbdrm7s5x57g:207.244.217.165:6712',
+  'http://pjydjspo:cbdrm7s5x57g:107.172.163.27:6543',
+  'http://pjydjspo:cbdrm7s5x57g:64.137.42.112:5157',
+];
+
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
@@ -205,26 +212,30 @@ let links = [];
   });
 
   app.post("/api", async function (req, res) {
+    id = (id || 0) + 1;
     const lastTimeBeforeLauchBrowser = Date.now();
     browser = await puppeteer.launch({
       headless: "new",
-      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      // executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       // executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      args: ["--no-sandbox", "--disable-setuid-sandbox", `--proxy-server=${'http://georgia2.ddns.net:50004'}`],
     });
     page = await browser.newPage();
+    await page.authenticate({
+      username: 'ujca9kfd',
+      password: 'p2320391',
+    });
     await page.setDefaultNavigationTimeout(100000);
     console.log('browser launchTime', (Date.now() - lastTimeBeforeLauchBrowser) / 1000);
-    id = (id || 0) + 1;
     console.log('api invoked', id);
-    if (id % 40 === 0) {
-      await new Promise(resolve => setTimeout(resolve, randomNumber(10000, 20000)));
-      console.log('take a break');
-    }
-    if (id % 120 === 0) {
-      await new Promise(resolve => setTimeout(resolve, randomNumber(20000, 30000)));
-      console.log('take a break');
-    }
+    // if (id % 40 === 0) {
+    //   await new Promise(resolve => setTimeout(resolve, randomNumber(10000, 20000)));
+    //   console.log('take a break');
+    // }
+    // if (id % 120 === 0) {
+    //   await new Promise(resolve => setTimeout(resolve, randomNumber(20000, 30000)));
+    //   console.log('take a break');
+    // }
     console.log('brower & page prepared');
     if (isProcessing) {
       console.log('still processing');
@@ -348,6 +359,7 @@ let links = [];
           size = size.replace('apple', '');
         }
         const lastTimeBeforeSize = Date.now();
+        await page.waitForTimeout(100);
         const sizes = await page.$$("label.available");
         const unavailableSizes = await page.$$("label.unavailable");
         console.log('Size detection time', (Date.now() - lastTimeBeforeSize) / 1000);
